@@ -60,9 +60,10 @@ app.get("/get/:key", async (req: Request, res: Response) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   dbClient.initialize().then(() => {
     console.log("DB has been initialized!");
   });
   console.log(`Server is running on port ${PORT}`);
+  await redisClient.connect();
 });

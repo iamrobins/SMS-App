@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ISMSProvider } from "../services/sms/interfaces";
 import SMSProviderFactory from "../services/sms/SMSProviderFactory";
+import { logSMSRequest } from "../services/log/logService";
 
 export const sendSMS = async (
   req: Request,
@@ -35,7 +36,7 @@ export const sendSMS = async (
     );
 
     // Log the request
-    // await logRequest(clientIP, phoneNumber, response.status);
+    await logSMSRequest(clientIP, phoneNumber, true);
 
     return res.status(200).json({ data: response });
   } catch (err) {
