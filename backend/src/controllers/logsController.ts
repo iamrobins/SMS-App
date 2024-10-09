@@ -21,7 +21,7 @@ export const streamLogs = async (req: Request, res: Response) => {
     res.write(`data: ${data}\n\n`);
   };
 
-  sendSSE(JSON.stringify({ message: "SSE connection established" }));
+  // sendSSE(JSON.stringify({ message: "SSE connection established" }));
 
   let lastSentLog: string | null = null;
 

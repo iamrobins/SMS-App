@@ -1,11 +1,15 @@
 import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 import redisClient from "./config/redisClient";
 import smsRoutes from "./routes/smsRoutes";
 import logRoutes from "./routes/logsRoutes";
 
+dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+app.use(cors());
 app.use(express.json());
 
 // Routes
