@@ -15,7 +15,7 @@ export const logSMSRequest = async (
   });
 
   try {
-    await redisClient.lPush("sms_requests", logEntry);
+    await redisClient.rPush("sms_requests", logEntry);
   } catch (error) {
     console.error("Error pushing sms logs to Redis:", error);
   }
@@ -23,17 +23,19 @@ export const logSMSRequest = async (
 
 export const logRateLimitError = async (
   clientIP: string,
-  phoneNumber: number
+  phoneNumber: number,
+  retryAfter: number
 ) => {
   const logEntry = JSON.stringify({
     type: "rate_limit_error",
     clientIP,
     phoneNumber,
+    retryAfter,
     timestamp: new Date(),
   });
 
   try {
-    await redisClient.lPush("rate_limit_error", logEntry);
+    await redisClient.rPush("rate_limit_error", logEntry);
   } catch (error) {
     console.error("Error pushing rate limit error log to Redis:", error);
   }

@@ -3,6 +3,7 @@ import redisClient from "./config/redisClient";
 import { dbClient } from "./config/dbClient";
 import { User } from "./entity/User";
 import smsRoutes from "./routes/smsRoutes";
+import logRoutes from "./routes/logsRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/sms", smsRoutes);
+app.use("/api/logs", logRoutes);
 
 app.get("/users", async (req, res) => {
   const users = await dbClient.getRepository(User).find();

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import checkRateLimit from "../services/rate_limiter/rateLimiterService";
-import exp from "constants";
+import { logRateLimitError } from "../services/log/logService";
 
 const rateLimiterMiddleware = async (
   req: Request,
@@ -22,12 +22,13 @@ const rateLimiterMiddleware = async (
     const isAllowed = await checkRateLimit(clientIP, phoneNumber);
 
     if (!isAllowed.allowed) {
+      logRateLimitError(clientIP, phoneNumber, isAllowed.retryAfter || -1);
       return res.status(429).json({
         message: "Rate limit exceeded",
-        retryAfter: isAllowed.retryAfter, // Tells client when they can retry
+        retryAfter: isAllowed.retryAfter,
       });
     }
-    next(); // Move to the next middleware if allowed
+    next(); // Move to the next middleware
   } catch (err) {
     next(err); // Forward error to global error handler
   }
