@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import redisClient from "./config/redisClient";
-import pool from "./config/dbClient";
+import { dbClient } from "./config/dbClient";
+import { User } from "./entity/User";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,24 +9,20 @@ const PORT = process.env.PORT || 3000;
 // Middleware to parse JSON
 app.use(express.json());
 
+app.get("/users", async (req, res) => {
+  const users = await dbClient.getRepository(User).find();
+  res.json(users);
+});
+
+app.post("/users", async (req, res) => {
+  const user = dbClient.getRepository(User).create(req.body);
+  const result = await dbClient.getRepository(User).save(user);
+  res.send(result);
+});
+
 // Basic route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript + Express.js + Redis!");
-});
-
-// Example route to get data from PostgreSQL
-app.get("/pg-test", async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res
-      .status(200)
-      .json({
-        message: "PostgreSQL connected successfully",
-        time: result.rows[0].now,
-      });
-  } catch (error) {
-    res.status(500).json({ message: "Error connecting to PostgreSQL", error });
-  }
 });
 
 // Route to set a value in Redis
@@ -60,5 +57,8 @@ app.get("/get/:key", async (req: Request, res: Response) => {
 
 // Start the server
 app.listen(PORT, () => {
+  dbClient.initialize().then(() => {
+    console.log("DB has been initialized!");
+  });
   console.log(`Server is running on port ${PORT}`);
 });

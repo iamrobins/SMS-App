@@ -1,19 +1,16 @@
-// src/postgresClient.ts
+import { DataSource } from "typeorm";
+import { User } from "../entity/User";
 
-import { Pool } from "pg";
-
-// Environment variables for PostgreSQL connection
-const pool = new Pool({
-  user: process.env.POSTGRES_USER,
+export const dbClient = new DataSource({
+  type: "postgres",
   host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
   port: Number(process.env.POSTGRES_PORT) || 5432,
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB,
+  synchronize: true, // In production, set to false and use migrations
+  logging: false,
+  entities: [User],
+  migrations: [],
+  subscribers: [],
 });
-
-pool.on("error", (err) => {
-  console.error("Unexpected error on idle PostgreSQL client", err);
-  process.exit(-1);
-});
-
-export default pool;
