@@ -26,6 +26,7 @@ app.post("/users", async (req, res) => {
 
 // Basic route
 app.get("/", (req: Request, res: Response) => {
+  res.send(req.socket.remoteAddress);
   res.send("Hello, TypeScript + Express.js + Redis!");
 });
 
