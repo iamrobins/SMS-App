@@ -24,6 +24,8 @@ import {
 } from "react-icons/ai";
 import { RiEarthLine } from "react-icons/ri";
 import ThemeToggle from "./ThemeToggle";
+import SMSStatistics from "./SMSStatistics";
+import { RateLimitViolations } from "./RateLimitViolations";
 
 const listItems = [
   {
@@ -113,8 +115,9 @@ export default function DrawerNavigation() {
           bg={useColorModeValue("gray.50", "gray.900")}
         >
           <Box textAlign="center">
-            <Heading as="h3">Main Heading</Heading>
-            <Text>Empty Main Content</Text>
+            <Heading as="h3">Statistics</Heading>
+            <SMSStatistics />
+            <RateLimitViolations />
           </Box>
         </Flex>
       </HStack>
@@ -160,8 +163,8 @@ const Aside = ({ onClose, isOpen, ...rest }: AsideProps) => {
       </HStack>
       <Box>
         <List spacing={0} p="0.5">
-          {listItems.map((item) => (
-            <ListElement icon={item.icon} text={item.text} />
+          {listItems.map((item, index) => (
+            <ListElement key={index} icon={item.icon} text={item.text} />
           ))}
         </List>
       </Box>
