@@ -28,7 +28,7 @@ const rateLimiterMiddleware = async (
         retryAfter: isAllowed.retryAfter,
       });
     }
-    next(); // Move to the next middleware
+    next();
   } catch (err) {
     next(err); // Forward error to global error handler
   }

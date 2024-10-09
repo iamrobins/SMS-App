@@ -15,7 +15,6 @@ export const sendSMS = async (
     }
     const { phoneNumber, recipientPhoneNumber, message } = req.body;
 
-    // Validate the request body
     if (
       typeof phoneNumber !== "number" ||
       typeof recipientPhoneNumber !== "number" ||
@@ -24,22 +23,19 @@ export const sendSMS = async (
       return res.status(400).json({ message: "Invalid request body" });
     }
 
-    // Get the correct SMS provider based on clientIP or other factors
     const smsProvider: ISMSProvider =
       SMSProviderFactory.getSMSProvider(clientIP);
 
-    // Use the provider to send the SMS
     const response = await smsProvider.sendSMS(
       phoneNumber,
       recipientPhoneNumber,
       message
     );
 
-    // Log the request
     await logSMSRequest(clientIP, phoneNumber, true);
 
     return res.status(200).json({ data: response });
   } catch (err) {
-    next(err); // Pass error to centralized error handler
+    next(err); // Forward error to global error handler
   }
 };

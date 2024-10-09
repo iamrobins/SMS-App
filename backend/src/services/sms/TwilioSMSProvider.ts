@@ -1,4 +1,3 @@
-// TwilioSMSProvider.ts
 import { ISMSProvider } from "./interfaces";
 
 export default class TwilioSMSProvider implements ISMSProvider {

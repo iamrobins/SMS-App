@@ -1,4 +1,3 @@
-// logService.js
 import redisClient from "../../config/redisClient";
 
 export const logSMSRequest = async (
