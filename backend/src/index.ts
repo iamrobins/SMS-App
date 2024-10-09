@@ -2,12 +2,16 @@ import express, { Request, Response } from "express";
 import redisClient from "./config/redisClient";
 import { dbClient } from "./config/dbClient";
 import { User } from "./entity/User";
+import smsRoutes from "./routes/smsRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON
 app.use(express.json());
+
+// Routes
+app.use("/api/sms", smsRoutes);
 
 app.get("/users", async (req, res) => {
   const users = await dbClient.getRepository(User).find();
