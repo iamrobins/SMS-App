@@ -1,14 +1,22 @@
 import { Request, Response } from "express";
 import redisClient from "../config/redisClient";
+
 enum LogType {
   SMS_REQUEST = "sms_requests",
   RATE_LIMIT_ERROR = "rate_limit_error",
 }
+
 export const streamLogs = async (req: Request, res: Response) => {
+  const clientIP = req.ip;
+
+  if (!clientIP) {
+    return res.status(400).json({ message: "Client IP not provided" });
+  }
+
   const logType = req.query.logType;
   if (
     typeof logType !== "string" ||
-    (logType != LogType.SMS_REQUEST && logType != LogType.RATE_LIMIT_ERROR)
+    (logType !== LogType.SMS_REQUEST && logType !== LogType.RATE_LIMIT_ERROR)
   ) {
     return res.status(400).json({ message: "logType not provided" });
   }
@@ -21,13 +29,12 @@ export const streamLogs = async (req: Request, res: Response) => {
     res.write(`data: ${data}\n\n`);
   };
 
-  // sendSSE(JSON.stringify({ message: "SSE connection established" }));
-
   let lastSentLog: string | null = null;
 
   const interval = setInterval(async () => {
     try {
-      const latestLog = await redisClient.lIndex(logType, -1);
+      const key = `${logType}:${clientIP}`;
+      const latestLog = await redisClient.lIndex(key, -1);
 
       if (latestLog && latestLog !== lastSentLog) {
         lastSentLog = latestLog;
