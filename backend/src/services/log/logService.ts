@@ -15,6 +15,7 @@ export const logSMSRequest = async (
 
   try {
     await redisClient.rPush(`sms_requests:${clientIP}`, logEntry);
+    await redisClient.expire(`sms_requests:${clientIP}`, 3600);
   } catch (error) {
     console.error("Error pushing sms logs to Redis:", error);
   }
@@ -35,6 +36,7 @@ export const logRateLimitError = async (
 
   try {
     await redisClient.rPush(`rate_limit_error:${clientIP}`, logEntry);
+    await redisClient.expire(`rate_limit_error:${clientIP}`, 3600);
   } catch (error) {
     console.error("Error pushing rate limit error log to Redis:", error);
   }
