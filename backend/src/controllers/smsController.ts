@@ -11,7 +11,7 @@ export const sendSMS = async (
   try {
     const clientIP = req.ip;
     if (!clientIP) {
-      throw new Error("Client IP not provided");
+      return next(new Error("Client IP not provided"));
     }
     const { phoneNumber, recipientPhoneNumber, message } = req.body;
 
