@@ -25,7 +25,7 @@ export const RateLimitLogs: React.FC = () => {
 
   useEffect(() => {
     const eventSource = new EventSource(
-      "http://localhost:8080/api/logs/stream-logs?logType=rate_limit_error"
+      `${process.env.REACT_APP_HOST}/api/logs/stream-logs?logType=rate_limit_error`
     );
 
     eventSource.onmessage = (event) => {

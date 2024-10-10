@@ -25,7 +25,7 @@ export const SMSLogs: React.FC = () => {
 
   useEffect(() => {
     const eventSource = new EventSource(
-      "http://localhost:8080/api/logs/stream-logs?logType=sms_requests"
+      `${process.env.REACT_APP_HOST}/api/logs/stream-logs?logType=sms_requests`
     );
 
     eventSource.onmessage = (event) => {

@@ -22,15 +22,18 @@ const SMSForm: React.FC = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8080/api/sms/send-sms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phoneNumber: Number(phoneNumber),
-          recipientPhoneNumber: Number(recipientPhoneNumber),
-          message,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_HOST}/api/sms/send-sms`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phoneNumber: Number(phoneNumber),
+            recipientPhoneNumber: Number(recipientPhoneNumber),
+            message,
+          }),
+        }
+      );
 
       const result = await res.json();
       if (res.status === 200) setResponse("SMS Successfully Sent");

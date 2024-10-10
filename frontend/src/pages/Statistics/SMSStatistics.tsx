@@ -16,7 +16,7 @@ const SMSStatistics: React.FC = () => {
     const fetchSMSStatistics = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/sms/usage-statistics"
+          `${process.env.REACT_APP_HOST}/api/sms/usage-statistics`
         );
         const data = await response.json();
         setSmsStatistics(data);
