@@ -6,8 +6,7 @@ import RateLimitLogs from "./RateLimitLogs";
 
 export const Statistics: React.FC = () => {
   return (
-    <VStack spacing={4}>
-      <Heading as="h3">Statistics</Heading>
+    <VStack spacing={4} my="4">
       <SMSStatistics />
       <SMSLogs />
       <RateLimitLogs />

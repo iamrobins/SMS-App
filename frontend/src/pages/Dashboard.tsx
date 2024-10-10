@@ -33,7 +33,7 @@ const listItems = [
   {
     text: "Home",
     icon: AiOutlineHome,
-    path: "statistics",
+    path: "",
   },
   {
     text: "SMS",
@@ -120,7 +120,7 @@ export default function DrawerNavigation() {
           bg={useColorModeValue("gray.50", "gray.900")}
         >
           <Routes>
-            <Route path="statistics" element={<Statistics />} />
+            <Route path="" element={<Statistics />} />
             <Route path="sms" element={<SMSForm />} />
           </Routes>
         </Flex>
