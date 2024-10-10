@@ -13,7 +13,9 @@ import {
   useBreakpointValue,
   useColorModeValue,
   useDisclosure,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
+import { Link, Routes, Route } from "react-router-dom";
 import { BiMenu } from "react-icons/bi";
 import {
   AiOutlineHome,
@@ -24,22 +26,25 @@ import {
 } from "react-icons/ai";
 import { RiEarthLine } from "react-icons/ri";
 import ThemeToggle from "./ThemeToggle";
-import SMSStatistics from "./SMSStatistics";
-import { RateLimitViolations } from "./RateLimitViolations";
+import Statistics from "./Statistics/Statistics";
+import SMSForm from "./SMS/SMSForm";
 
 const listItems = [
   {
     text: "Home",
     icon: AiOutlineHome,
+    path: "statistics",
   },
   {
     text: "SMS",
     icon: AiOutlineMail,
+    path: "sms",
   },
 
   {
     text: "Settings",
     icon: AiOutlineSetting,
+    path: "",
   },
 ];
 
@@ -110,15 +115,14 @@ export default function DrawerNavigation() {
           ml={{ base: 0, lg: "60" }}
           w="full"
           minH="90vh"
-          align="center"
+          align="left"
           justify="center"
           bg={useColorModeValue("gray.50", "gray.900")}
         >
-          <Box textAlign="center">
-            <Heading as="h3">Statistics</Heading>
-            <SMSStatistics />
-            <RateLimitViolations />
-          </Box>
+          <Routes>
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="sms" element={<SMSForm />} />
+          </Routes>
         </Flex>
       </HStack>
     </>
@@ -164,7 +168,9 @@ const Aside = ({ onClose, isOpen, ...rest }: AsideProps) => {
       <Box>
         <List spacing={0} p="0.5">
           {listItems.map((item, index) => (
-            <ListElement key={index} icon={item.icon} text={item.text} />
+            <ChakraLink key={index} as={Link} to={item.path}>
+              <ListElement icon={item.icon} text={item.text} />
+            </ChakraLink>
           ))}
         </List>
       </Box>

@@ -9,28 +9,34 @@ import {
   Tr,
   Th,
   Td,
-  Tfoot,
 } from "@chakra-ui/react";
 
-interface RateLimitLog {
+interface SMSRequestLog {
   type: string;
   clientIP: string;
   phoneNumber: number;
-  retryAfter: number;
+  status: boolean;
   timestamp: string;
 }
 
-export const RateLimitViolations: React.FC = () => {
-  const [violationLogs, setViolationLogs] = useState<RateLimitLog[]>([]);
+export const SMSStatistics: React.FC = () => {
+  const [smsLogs, setSmsLogs] = useState<SMSRequestLog[]>([]);
 
   useEffect(() => {
     const eventSource = new EventSource(
-      "http://localhost:8080/api/logs/stream-logs?logType=rate_limit_error"
+      "http://localhost:8080/api/logs/stream-logs?logType=sms_requests"
     );
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setViolationLogs((prevLogs) => [...prevLogs, data]);
+      const data: SMSRequestLog = JSON.parse(event.data);
+      setSmsLogs((prevLogs) => {
+        // If the number of logs is 100, remove the oldest (first) one and add the new log
+        if (prevLogs.length >= 100) {
+          return [...prevLogs.slice(1), data];
+        } else {
+          return [...prevLogs, data];
+        }
+      });
     };
 
     return () => {
@@ -41,38 +47,36 @@ export const RateLimitViolations: React.FC = () => {
   return (
     <Box p={4} borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Heading size="md" mb={4}>
-        Rate Limit Violations
+        SMS Request Logs
       </Heading>
-
-      <TableContainer>
+      <TableContainer
+        width={["340px", "400px", "800px"]}
+        maxHeight={"40vh"}
+        overflowY={"auto"}
+      >
         <Table size="sm">
           <Thead>
             <Tr>
               <Th>Time</Th>
               <Th>IP</Th>
               <Th isNumeric>Phone Number</Th>
-              <Th>Retry After (s)</Th>
+              <Th>Status</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {violationLogs.map((log, index) => (
+            {smsLogs.map((log, index) => (
               <Tr key={log.timestamp}>
                 <Td>{new Date(log.timestamp).toLocaleString()}</Td>
                 <Td>{log.clientIP}</Td>
                 <Td isNumeric>{log.phoneNumber}</Td>
-                <Td>{log.retryAfter}</Td>
+                <Td>{log.status ? "Success" : "Failure"}</Td>
               </Tr>
             ))}
           </Tbody>
-          {/* <Tfoot>
-              <Tr>
-                <Th>To convert</Th>
-                <Th>into</Th>
-                <Th isNumeric>multiply by</Th>
-              </Tr>
-            </Tfoot> */}
         </Table>
       </TableContainer>
     </Box>
   );
 };
+
+export default SMSStatistics;
