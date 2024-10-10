@@ -1,0 +1,203 @@
+{
+	"info": {
+		"_postman_id": "bd7a1bcf-9ae7-45d0-a238-262f0ee45946",
+		"name": "SMS API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24138050"
+	},
+	"item": [
+		{
+			"name": "Send SMS",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phoneNumber\": 7985204728,\n    \"recipientPhoneNumber\": 9231753183,\n    \"message\": \"Hello\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/sms/send-sms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"sms",
+						"send-sms"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Send SMS",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phoneNumber\": 7985204728,\n    \"recipientPhoneNumber\": 9231753183,\n    \"message\": \"Hello\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/sms/send-sms",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"sms",
+								"send-sms"
+							]
+						}
+					},
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"data\": {\n        \"sid\": \"12345\",\n        \"to\": 9231753183,\n        \"from\": 7985204728,\n        \"body\": \"Hello\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Stream Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/logs/stream-logs?logType=sms_requests",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"logs",
+						"stream-logs"
+					],
+					"query": [
+						{
+							"key": "logType",
+							"value": "sms_requests"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Stream Logs",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/logs/stream-logs?logType=sms_requests",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logs",
+								"stream-logs"
+							],
+							"query": [
+								{
+									"key": "logType",
+									"value": "sms_requests",
+									"description": "sms_requests or rate_limit_error"
+								}
+							]
+						}
+					},
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		},
+		{
+			"name": "Usage Statistics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/sms/usage-statistics",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"sms",
+						"usage-statistics"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Usage Statistics",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/sms/usage-statistics",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"sms",
+								"usage-statistics"
+							]
+						}
+					},
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"smsLastMinute\": 2,\n    \"smsToday\": 8\n}"
+				}
+			]
+		}
+	]
+}
