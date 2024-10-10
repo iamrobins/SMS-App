@@ -1,80 +1,59 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  TableContainer,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-} from "@chakra-ui/react";
+import { Box, Heading, Text, Spinner } from "@chakra-ui/react";
 
-interface SMSRequestLog {
-  type: string;
-  clientIP: string;
-  phoneNumber: number;
-  status: boolean;
-  timestamp: string;
+interface SMSStatisticsData {
+  smsLastMinute: number;
+  smsToday: number;
 }
 
-export const SMSStatistics: React.FC = () => {
-  const [smsLogs, setSmsLogs] = useState<SMSRequestLog[]>([]);
+const SMSStatistics: React.FC = () => {
+  const [smsStatistics, setSmsStatistics] = useState<SMSStatisticsData | null>(
+    null
+  );
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const eventSource = new EventSource(
-      "http://localhost:8080/api/logs/stream-logs?logType=sms_requests"
-    );
-
-    eventSource.onmessage = (event) => {
-      const data: SMSRequestLog = JSON.parse(event.data);
-      setSmsLogs((prevLogs) => {
-        // If the number of logs is 100, remove the oldest (first) one and add the new log
-        if (prevLogs.length >= 100) {
-          return [...prevLogs.slice(1), data];
-        } else {
-          return [...prevLogs, data];
-        }
-      });
+    const fetchSMSStatistics = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/sms/usage-statistics"
+        );
+        const data = await response.json();
+        setSmsStatistics(data);
+      } catch (error) {
+        console.error("Error fetching SMS usage statistics:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return () => {
-      eventSource.close();
-    };
+    // Fetch statistics initially and every 10 seconds
+    fetchSMSStatistics();
+    const interval = setInterval(fetchSMSStatistics, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <Box p={4} borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Heading size="md" mb={4}>
-        SMS Request Logs
+        SMS Usage Statistics
       </Heading>
-      <TableContainer
-        width={["340px", "400px", "800px"]}
-        maxHeight={"40vh"}
-        overflowY={"auto"}
-      >
-        <Table size="sm">
-          <Thead>
-            <Tr>
-              <Th>Time</Th>
-              <Th>IP</Th>
-              <Th isNumeric>Phone Number</Th>
-              <Th>Status</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {smsLogs.map((log, index) => (
-              <Tr key={log.timestamp}>
-                <Td>{new Date(log.timestamp).toLocaleString()}</Td>
-                <Td>{log.clientIP}</Td>
-                <Td isNumeric>{log.phoneNumber}</Td>
-                <Td>{log.status ? "Success" : "Failure"}</Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+      {loading ? (
+        <Spinner />
+      ) : smsStatistics ? (
+        <>
+          <Text>
+            <strong>SMS Sent in the Last Minute:</strong>{" "}
+            {smsStatistics.smsLastMinute}
+          </Text>
+          <Text>
+            <strong>Total SMS Sent Today:</strong> {smsStatistics.smsToday}
+          </Text>
+        </>
+      ) : (
+        <Text>No data available</Text>
+      )}
     </Box>
   );
 };
