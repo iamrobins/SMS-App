@@ -1,8 +1,28 @@
 const { createClient } = require("redis");
-const { Pool } = require("pg"); // Import the pg library
+const { Pool } = require("pg");
 require("dotenv").config();
 
-// Initialize PostgreSQL connection using pg Pool
+// Helper function to retry an operation with exponential backoff
+const retryOperation = async (operation, retries = 5, delay = 1000) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (attempt < retries) {
+        console.error(
+          `Attempt ${attempt} failed. Retrying in ${delay}ms...`,
+          error
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+      } else {
+        throw error; // Out of retries
+      }
+    }
+  }
+};
+
+// Initialize PostgreSQL connection using pg Pool with retry
 const pool = new Pool({
   host: process.env.POSTGRES_HOST || "localhost",
   port: parseInt(process.env.POSTGRES_PORT) || 5432,
@@ -11,7 +31,6 @@ const pool = new Pool({
   database: process.env.POSTGRES_DB,
 });
 
-// Function to ensure the table exists
 const ensureSMSTableExists = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS sms_logs (
@@ -22,14 +41,8 @@ const ensureSMSTableExists = async () => {
       timestamp TIMESTAMPTZ
     )
   `;
-
-  try {
-    await pool.query(createTableQuery);
-    console.log("Ensured 'sms_logs' table exists.");
-  } catch (error) {
-    console.error("Error creating 'sms_logs' table:", error);
-    process.exit(1); // Exit process if table creation fails
-  }
+  await retryOperation(() => pool.query(createTableQuery));
+  console.log("Ensured 'sms_logs' table exists.");
 };
 
 const ensureRateLimitErrorTableExists = async () => {
@@ -42,17 +55,11 @@ const ensureRateLimitErrorTableExists = async () => {
         timestamp TIMESTAMPTZ
       )
     `;
-
-  try {
-    await pool.query(createTableQuery);
-    console.log("Ensured 'rate_limit_error_logs' table exists.");
-  } catch (error) {
-    console.error("Error creating 'rate_limit_error_logs' table:", error);
-    process.exit(1); // Exit process if table creation fails
-  }
+  await retryOperation(() => pool.query(createTableQuery));
+  console.log("Ensured 'rate_limit_error_logs' table exists.");
 };
 
-// Initialize Redis client
+// Initialize Redis client with retry
 const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 const redisClient = createClient({
   url: redisUrl,
@@ -60,83 +67,87 @@ const redisClient = createClient({
 
 redisClient.on("error", (err) => console.error("Redis Client Error", err));
 
-// Function to process logs from Redis and save them to PostgreSQL
 const processLogs = async () => {
   while (true) {
     try {
-      const logData = await redisClient.lPop("sms_requests");
+      // Scan Redis for all keys matching the pattern "sms_requests:*"
+      const { keys } = await redisClient.scan(0, {
+        MATCH: "sms_requests:*",
+        COUNT: 100, // Adjust the count depending on how many logs you expect
+      });
+      for (const key of keys) {
+        const logData = await redisClient.lPop(key);
 
-      if (logData) {
-        const logEntry = JSON.parse(logData);
+        if (logData) {
+          const logEntry = JSON.parse(logData);
 
-        try {
-          const query = `
-            INSERT INTO sms_logs (clientIP, phoneNumber, status, timestamp)
-            VALUES ($1, $2, $3, $4)
-          `;
-          const values = [
-            logEntry.clientIP,
-            logEntry.phoneNumber,
-            logEntry.status,
-            logEntry.timestamp,
-          ];
+          try {
+            const query = `
+              INSERT INTO sms_logs (clientIP, phoneNumber, status, timestamp)
+              VALUES ($1, $2, $3, $4)
+            `;
+            const values = [
+              logEntry.clientIP,
+              logEntry.phoneNumber,
+              logEntry.status,
+              logEntry.timestamp,
+            ];
 
-          // Use pool.query to run the SQL query
-          await pool.query(query, values);
-          console.log("SMS Log entry saved to database:", logEntry);
-        } catch (dbError) {
-          console.error("Error saving sms log to database:", dbError);
+            await pool.query(query, values);
+            console.log("SMS Log entry saved to database:", logEntry);
+          } catch (dbError) {
+            console.error("Error saving sms log to database:", dbError);
+          }
         }
       }
     } catch (err) {
-      console.error("Error retrieving sms log from Redis:", err);
+      console.error("Error retrieving sms logs from Redis:", err);
     }
 
     try {
-      const logData = await redisClient.lPop("rate_limit_error");
+      // Scan Redis for all keys matching the pattern "rate_limit_error:*"
+      const { keys } = await redisClient.scan(0, {
+        MATCH: "rate_limit_error:*",
+        COUNT: 100, // Adjust the count depending on how many logs you expect
+      });
+      for (const key of keys) {
+        const logData = await redisClient.lPop(key);
 
-      if (logData) {
-        const logEntry = JSON.parse(logData);
+        if (logData) {
+          const logEntry = JSON.parse(logData);
 
-        try {
-          const query = `
+          try {
+            const query = `
               INSERT INTO rate_limit_error_logs (clientIP, phoneNumber, retryAfter, timestamp)
               VALUES ($1, $2, $3, $4)
             `;
-          const values = [
-            logEntry.clientIP,
-            logEntry.phoneNumber,
-            logEntry.retryAfter,
-            logEntry.timestamp,
-          ];
+            const values = [
+              logEntry.clientIP,
+              logEntry.phoneNumber,
+              logEntry.retryAfter,
+              logEntry.timestamp,
+            ];
 
-          // Use pool.query to run the SQL query
-          await pool.query(query, values);
-          console.log(
-            "Rate limit error log entry saved to database:",
-            logEntry
-          );
-        } catch (dbError) {
-          console.error(
-            "Error saving rate limit error log to database:",
-            dbError
-          );
+            await pool.query(query, values);
+            console.log("Rate Limit Log entry saved to database:", logEntry);
+          } catch (dbError) {
+            console.error("Error saving rate limit log to database:", dbError);
+          }
         }
       }
     } catch (err) {
-      console.error("Error retrieving rate limit error log from Redis:", err);
+      console.error("Error retrieving rate limit logs from Redis:", err);
     }
 
-    // Wait before checking for new logs to avoid busy-waiting
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Wait 10 minutes before checking for new logs
+    await new Promise((resolve) => setTimeout(resolve, 600000));
   }
 };
 
-// Ensure the Redis client is ready before processing logs
-redisClient
-  .connect()
+// Connect to Redis with retry
+retryOperation(() => redisClient.connect())
   .then(async () => {
-    // First, ensure the tables exists
+    // Ensure the tables exist
     await ensureSMSTableExists();
     await ensureRateLimitErrorTableExists();
     // Start processing logs
