@@ -31,7 +31,6 @@ describe("Send SMS with Rate Limiting", () => {
         .expect("Content-Type", /json/)
         .expect(200); // Expecting a 200 OK response
 
-      // Check that the response body matches the expected structure
       expect(res.body).toEqual({
         data: {
           sid: "12345", // Assuming this is the API's response for `sid`

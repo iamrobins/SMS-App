@@ -49,7 +49,6 @@ export const getSMSStatistics = async (clientIP: string) => {
 
   const logKey = `sms_requests:${clientIP}`; // Redis key for storing SMS logs
 
-  // Fetch logs from Redis
   const logs = await redisClient.lRange(logKey, 0, -1);
 
   let smsLastMinute = 0;
@@ -70,14 +69,12 @@ export const getSMSStatistics = async (clientIP: string) => {
   return { smsLastMinute, smsToday };
 };
 
-// New route for fetching statistics
 export const getSMSUsageStatistics = async (req: Request, res: Response) => {
   try {
     const clientIP = req.ip;
     if (!clientIP)
       return res.status(400).json({ message: "Client IP not provided" });
 
-    // Retrieve SMS statistics
     const statistics = await getSMSStatistics(clientIP);
 
     return res.json(statistics);

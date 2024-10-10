@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../index"; // Adjust the path to your app
+import { app } from "../index";
 import redisClient from "../config/redisClient";
 
 describe("Get SMS Usage Statistics", () => {

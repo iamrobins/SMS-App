@@ -1,5 +1,5 @@
 import React from "react";
-import { Heading, VStack } from "@chakra-ui/react";
+import { VStack } from "@chakra-ui/react";
 import SMSStatistics from "./SMSStatistics";
 import SMSLogs from "./SMSLogs";
 import RateLimitLogs from "./RateLimitLogs";
