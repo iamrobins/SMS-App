@@ -19,8 +19,11 @@ app.use("/api/logs", logRoutes);
 
 app.use(errorHandler);
 
-// Start the server
-app.listen(PORT, async () => {
-  await redisClient.connect();
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, async () => {
+    await redisClient.connect();
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+export { app };
