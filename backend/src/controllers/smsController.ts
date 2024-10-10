@@ -10,7 +10,7 @@ export const sendSMS = async (
   next: NextFunction
 ) => {
   try {
-    const clientIP = req.ip;
+    const clientIP = (req.headers["x-forwarded-for"] as string) || req.ip;
     if (!clientIP) {
       return next(new Error("Client IP not provided"));
     }
@@ -42,7 +42,7 @@ export const sendSMS = async (
 };
 
 // Helper to calculate statistics
-const getSMSStatistics = async (clientIP: string) => {
+export const getSMSStatistics = async (clientIP: string) => {
   const oneMinuteAgo = Date.now() - 60 * 1000; // Timestamp for 1 minute ago
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0); // Timestamp for the start of today
