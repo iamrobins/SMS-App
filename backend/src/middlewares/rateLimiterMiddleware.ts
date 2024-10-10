@@ -11,11 +11,11 @@ const rateLimiterMiddleware = async (
   const clientIP = req.ip;
 
   if (!clientIP) {
-    throw new Error("Client IP not provided");
+    return next(new Error("Client IP not provided"));
   }
 
   if (typeof phoneNumber !== "number" || !phoneNumber) {
-    throw new Error("Phone number not provided");
+    return next(new Error("Phone number not provided"));
   }
 
   try {
